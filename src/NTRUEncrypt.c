@@ -1,10 +1,3 @@
-/*
- * NTRUEncrypt.c
- *
- *  Created on: Aug 16, 2017
- *      Author: zhenfei
- */
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

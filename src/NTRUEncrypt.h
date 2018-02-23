@@ -1,10 +1,3 @@
-/*
- * NTRUEncrypt.h
- *
- *  Created on: Aug 16, 2017
- *      Author: zhenfei
- */
-
 #ifndef NTRUENCRYPT_H_
 #define NTRUENCRYPT_H_
 

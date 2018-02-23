@@ -1,10 +1,3 @@
-/*
- * KAT.c
- *
- *  Created on: Aug 31, 2017
- *      Author: zhenfei
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

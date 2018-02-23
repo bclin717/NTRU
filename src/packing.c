@@ -1,10 +1,3 @@
-/*
- * packing.c
- *
- *  Created on: Aug 30, 2017
- *      Author: zhenfei
- */
-
 #include <stdint.h>
 #include "param.h"
 

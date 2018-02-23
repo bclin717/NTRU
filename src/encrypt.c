@@ -1,12 +1,3 @@
-/*
- * encrypt.c
- *
- *  Created on: Aug 31, 2017
- *      Author: zhenfei
- */
-
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
