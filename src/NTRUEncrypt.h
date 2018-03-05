@@ -109,7 +109,8 @@ encrypt_cca_KAT(
  * CCA-2 secure decryption algorithm using NAEP
  * memory requirement: 7 ring elements + LENGTH_OF_HASH*2
  */
-int decrypt_cca(
+int
+decrypt_cca(
         char *msg,   /* output message string */
         const int64_t *f,     /* input secret key */
         const int64_t *hntt,  /* input public key */

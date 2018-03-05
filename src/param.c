@@ -30,8 +30,7 @@ static PARAM_SET ParamSets[] = {
 
 static int numParamSets = sizeof(ParamSets) / sizeof(PARAM_SET);
 
-PARAM_SET *
-get_param_set_by_id(PARAM_SET_ID id) {
+PARAM_SET *get_param_set_by_id(PARAM_SET_ID id) {
     int i;
 
     for (i = 0; i < numParamSets; i++) {

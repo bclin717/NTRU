@@ -19,8 +19,6 @@ int get_len(char *c) {
 }
 
 int test_basics(void) {
-
-
     uint16_t i;
     PARAM_SET *param = get_param_set_by_id(NTRU_KEM_1024);
     int64_t *mem, *f, *g, *hntt, *buf, *m, *m2, *cntt; /* *c, *h; */
@@ -362,9 +360,41 @@ void test_nist_api_cca_KAT() {
     puts("!!!Hello OnBoard Security!!!");
 }
 
+void DGStest() {
+    uint16_t i;
+    PARAM_SET *param = get_param_set_by_id(NTRU_KEM_1024);
+    int64_t *mem, *f, *g, *hntt, *buf, *m, *m2, *cntt; /* *c, *h; */
+    char *msg_rev;
 
-int main() {
-    test_basics();
+    mem = malloc(sizeof(int64_t) * param->N * 13 + LENGTH_OF_HASH * 2);
+    msg_rev = malloc(sizeof(char) * param->max_msg_len);
+    if (!mem || !msg_rev) {
+        printf("malloc failed\n");
+        return -1;
+    }
+
+    m = mem;
+    m2 = m + param->N;
+    cntt = m2 + param->N;
+    f = cntt + param->N;
+    g = f + param->N;;
+    hntt = g + param->N;
+    buf = hntt + param->N;     /* 7 ring elements and 2 hashes*/
+
+    printf("testing discrete Gaussian sampler with dev %lld\n", (long long) param->stddev);
+    DGS(f, (const uint16_t) param->N, (const uint16_t) param->stddev);
+    for (i = 0; i < param->N; i++) {
+        printf("%5lld ", (long long) f[i]);
+        if (i % 32 == 31)
+            printf("\n");
+    }
+    memset(f, 0, sizeof(int64_t) * param->N);
+}
+
+
+int testMain() {
+    DGStest();
+//    test_basics();
 //    if (TEST_PARAM_SET == NTRU_CCA_1024)
 //        test_nist_api_cca();
 //    else

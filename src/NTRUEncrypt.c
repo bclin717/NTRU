@@ -28,9 +28,10 @@ keygen(
     DGS(f, param->N, param->stddev);
     DGS(g, param->N, param->stddev);
 
-    /* f = 2F+1 */
+    /* f = pF+1
+     * p is usually 2 or 3 or x+2 */
     for (i = 0; i < param->N; i++) {
-        f[i] = f[i] * 2;
+        f[i] = f[i] * param->p;
     }
     f[0] = f[0] + 1;
 
@@ -42,8 +43,8 @@ keygen(
     for (i = 0; i < param->N; i++) {
         /* compute f^-1 mod q */
         fntt[i] = InvMod(fntt[i], param->q);
-        /* compute h = gf^-1 mod q */
-        hntt[i] = 2 * gntt[i] * fntt[i] % param->q;
+        /* compute h = p*gf^-1 mod q */
+        hntt[i] = param->p * gntt[i] * fntt[i] % param->q;
     }
     memset(buf, 0, sizeof(int64_t) * param->N * 2);
 }
