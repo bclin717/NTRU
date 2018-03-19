@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
+#include "ProxyReEncrypt.h"
 #include "NTRUEncrypt.h"
 #include "param.h"
 #include "poly/poly.h"
@@ -76,8 +78,14 @@ int main() {
 //    }
 //    memset(f, 0, sizeof(int64_t) * param->N);
 
-    keyGen();
-    checkKey();
+//    keyGen();
+//    checkKey();
+
+    int64_t a[2] = {4, 9};
+    int64_t length = sizeof(a) / sizeof(a[0]);
+    int64_t output[length*param->l];
+
+    bitDecomposition(a, 2, output, param->l*length, param->l);
 
     return 0;
 }

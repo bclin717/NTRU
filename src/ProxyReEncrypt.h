@@ -12,7 +12,10 @@
 void
 bitDecomposition(
         int64_t *BDinput,
-        int64_t *BDoutput);
+        const int length,
+        int64_t *BDoutput,
+        const int outputLength,
+        int64_t l);
 
 void
 powerOf2(
@@ -23,8 +26,7 @@ void
 computeReEncryptionKey(
         int64_t keyA,
         int64_t keyB,
-        int64_t reKey
-);
+        int64_t reKey);
 
 void
 ReEncrypt(

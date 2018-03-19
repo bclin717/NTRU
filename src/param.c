@@ -11,11 +11,12 @@ static PARAM_SET ParamSets[] = {
                 1024,                 /* ring degree */
                 2,                    /* message space prime */
                 1073750017,           /* ring modulus, 2^30+2^13+1 */
+                31,                   /* l */
                 724,                  /* standard deviation, ~ 2^10.5 */
                 128,                  /* maximum message length (in bytes) */
         },
         {
-                NTRU_CCA_1024,        /* parameter set id */
+                NTRU_CCA_1024,        /* parambitDecompositioneter set id */
                 "NTRU_CCA_1024",      /* human readable name */
                 {0xff, 0xff, 0xf9},   /* OID */
                 11,                   /* bitlength of N */
@@ -23,6 +24,7 @@ static PARAM_SET ParamSets[] = {
                 1024,                 /* ring degree */
                 2,                    /* message space prime */
                 1073750017,           /* ring modulus, 2^30+2^13+1 */
+                31,                   /* l */
                 724,                  /* standard deviation, ~ 2^10.5 */
                 95,                   /* maximum message length in bytes*/
         },

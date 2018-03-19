@@ -25,6 +25,7 @@ struct _NTRU_PARAM_SET {
     const uint64_t N;           /* ring degree */
     int8_t p;           /* message space prime */
     int64_t q;           /* ring modulus */
+    int64_t l;             /* log2(q) + 1 */
     const uint64_t stddev;      /* standard deviation*/
     int16_t max_msg_len; /* maximum message length (in bytes) */
 
