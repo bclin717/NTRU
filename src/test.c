@@ -100,6 +100,7 @@ int test_basics(void) {
 
     printf("============================================\n");
     printf("============================================\n");
+
     printf("now testing KEM.\n");
 
     printf("generate a random binary polynomial as the message\n");
@@ -118,7 +119,6 @@ int test_basics(void) {
         if (i % 16 == 15)
             printf("\n");
     }
-
     printf("at last we decrypt c to recover m\n");
     decrypt_kem(m2, f, cntt, buf, param);
 

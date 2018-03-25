@@ -82,10 +82,24 @@ int main() {
 //    checkKey();
 
     int64_t a[2] = {4, 9};
+    int64_t b[2] = {6, 1};
     int64_t length = sizeof(a) / sizeof(a[0]);
-    int64_t output[length*param->l];
+    int64_t BDoutput[length*param->l];
 
-    bitDecomposition(a, 2, output, param->l*length, param->l);
+    int64_t POoutput[length*param->l];
+
+    bitDecomposition(a, 2, BDoutput, param->l*length, param->l);
+    powerOf2(b, 2, POoutput, param);
+
+    int64_t result = 0;
+
+    for(i = 0; i < length*param->l; i++) {
+        result += BDoutput[i]*POoutput[i];
+        result = result % param->q;
+    }
+
+    printf("\nresult = %d\n", result);
+
 
     return 0;
 }

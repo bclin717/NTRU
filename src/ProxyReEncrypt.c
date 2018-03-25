@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "param.h"
 #include "poly/poly.h"
 #include "rng/fastrandombytes.h"
@@ -24,9 +25,9 @@ void base10to2(int64_t n, int64_t l, int64_t* output) {
 
 void
 bitDecomposition(
-        int64_t *BDinput,
+        int64_t* BDinput,
         const int inputLength,
-        int64_t *BDoutput,
+        int64_t* BDoutput,
         const int outputLength,
         int64_t l) {
 
@@ -42,6 +43,7 @@ bitDecomposition(
         }
     }
 
+    // print
     for(i = 0; i < inputLength; i++) {
         printf("No %d elements : %d in base 2: ",i ,BDinput[i]);
         for(i2 = 0; i2 < l ; i2++) {
@@ -53,6 +55,29 @@ bitDecomposition(
     printf("BitDecompose Output : ");
     for(i = 0; i < outputLength ; i++) {
         printf("%d", BDoutput[i]);
+    }
+
+}
+
+void
+powerOf2(
+        int64_t* POinput,
+        const int inputLength,
+        int64_t* POoutput,
+        PARAM_SET* param) {
+
+    int i, i2;
+    for(i = 0; i < param->l; i++) {
+        for(i2 = 0; i2 < inputLength; i2++) {
+            POoutput[i * inputLength + (inputLength - i2 - 1)] = (int64_t)( pow(2, i) * POinput[i2] ) % param->q;
+        }
+    }
+
+    printf("\nPowerOf2 Output :");
+    for(i = 0; i < param->l*inputLength; i++) {
+        if(i % inputLength == 0) printf(" ");
+        printf("%d,", POoutput[i]);
+
     }
 
 }

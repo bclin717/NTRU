@@ -11,16 +11,18 @@
 
 void
 bitDecomposition(
-        int64_t *BDinput,
-        const int length,
-        int64_t *BDoutput,
+        int64_t* BDinput,
+        const int inputLength,
+        int64_t* BDoutput,
         const int outputLength,
-        int64_t l);
+        const int64_t l);
 
 void
 powerOf2(
-        int64_t *POinput,
-        int64_t *POoutput);
+        int64_t* POinput,
+        const int inputLength,
+        int64_t* POoutput,
+        const PARAM_SET* param);
 
 void
 computeReEncryptionKey(
@@ -30,17 +32,17 @@ computeReEncryptionKey(
 
 void
 ReEncrypt(
-        const char *msg,
+        const char* msg,
         int64_t hntt,
         int64_t cntt,
-        const PARAM_SET *param);
+        const PARAM_SET* param);
 
 void
 ReDecrypt(
-        char *msg,   /* output message string */
-        int64_t *f,     /* input secret key */
-        int64_t *hntt,  /* input public key */
-        int64_t *cntt,  /* input ciphertext */
-        int64_t *buf,
-        const PARAM_SET *param);
+        char* msg,   /* output message string */
+        int64_t* f,     /* input secret key */
+        int64_t* hntt,  /* input public key */
+        int64_t* cntt,  /* input ciphertext */
+        int64_t* buf,
+        const PARAM_SET* param);
 
