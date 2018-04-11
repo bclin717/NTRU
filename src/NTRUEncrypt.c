@@ -37,6 +37,7 @@ keygen(
 
     /* converting to NTT form */
     NTT(g, gntt, param);
+    fntt[i] = InvMod(fntt[i], param->q);
     NTT(f, fntt, param);
 
     /* compute h = g/f mod q */
@@ -112,7 +113,7 @@ encrypt_kem(
     DGS(e, param->N, param->stddev);
     DGS(r, param->N, param->stddev);
     for (i = 0; i < param->N; i++)
-        e[i] = e[i] * 2 + m[i];
+        e[i] = e[i] * param->p + m[i];
 
     NTT(e, entt, param);
     NTT(r, rntt, param);

@@ -25,10 +25,14 @@ powerOf2(
         const PARAM_SET* param);
 
 void
-computeReEncryptionKey(
-        int64_t keyA,
-        int64_t keyB,
-        int64_t reKey);
+generateReEncryptionKey(
+        int64_t *fA,       /* input secret key f of A */
+        int64_t *hB,       /* intput public key h of B */
+        int64_t *rk,      /* output re-encryption key rk */
+        int64_t *buf,
+        const PARAM_SET *param);
+
+
 
 void
 ReEncrypt(

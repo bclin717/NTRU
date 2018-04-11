@@ -84,6 +84,7 @@ int main() {
     int64_t a[2] = {4, 9};
     int64_t b[2] = {6, 1};
     int64_t length = sizeof(a) / sizeof(a[0]);
+    printf("length is %d \n", length);
     int64_t BDoutput[length*param->l];
 
     int64_t POoutput[length*param->l];

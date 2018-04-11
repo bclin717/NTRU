@@ -79,5 +79,45 @@ powerOf2(
         printf("%d,", POoutput[i]);
 
     }
+}
 
+void
+generateReEncryptionKey(
+        int64_t *fA,       /* input secret key f of A */
+        int64_t *hnttB,       /* intput public key h of B */
+        int64_t *rk,      /* output re-encryption key rk */
+        int64_t *buf,
+        const PARAM_SET *param) {
+
+    int64_t length = sizeof(fA) / sizeof(fA[0]);
+    int64_t *POfA;
+    int64_t *rkntt;
+
+    int64_t i, *e, *entt, *r, *rntt;
+    e = buf;
+    entt = e + param->N;
+    r = entt + param->N;
+    rntt = r + param->N;
+
+    DGS(e, param->N, param->stddev);
+    DGS(r, param->N, param->stddev);
+
+    // p*e2
+    for (i = 0; i < param->N; i++) {
+        r[i] = r[i] * param->p;
+    }
+
+    NTT(e, entt, param);
+    NTT(r, rntt, param);
+
+    // PO(fA)
+    powerOf2(fA, length, POfA, param);
+
+    // rkntt = hB(NTT) * e(NTT) + r(NTT) mod q
+    for (i = 0; i < param->N; i++)
+        rkntt[i] = modq(entt[i] * hnttB[i] + rntt[i], param->q);
+
+    INTT(rk, rkntt, param);
+
+    memset(buf, 0, sizeof(int64_t) * param->N * 4);
 }
