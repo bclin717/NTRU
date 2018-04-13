@@ -33,20 +33,19 @@ generateReEncryptionKey(
         const PARAM_SET *param);
 
 
-
 void
 ReEncrypt(
-        const char* msg,
-        int64_t hntt,
-        int64_t cntt,
+        int64_t *reCntt, /* output msg re-encrypted */
+        int64_t *rk,  /* input re-encryption key */
+        int64_t cntt, /* input msg encrypted by Key A */
+        int64_t *buf,
         const PARAM_SET* param);
 
 void
 ReDecrypt(
-        char* msg,   /* output message string */
-        int64_t* f,     /* input secret key */
-        int64_t* hntt,  /* input public key */
-        int64_t* cntt,  /* input ciphertext */
+        int64_t *fB,     /* input secret key f of B */
+        int64_t *deCntt,  /* output decrypted msg */
+        int64_t *cntt,  /* input re-encrypted msg */
         int64_t* buf,
         const PARAM_SET* param);
 

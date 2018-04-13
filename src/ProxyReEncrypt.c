@@ -99,6 +99,10 @@ generateReEncryptionKey(
     r = entt + param->N;
     rntt = r + param->N;
 
+    //uncertain
+    POfA = rntt + param->N;
+    rkntt = POfA + param->N;
+
     DGS(e, param->N, param->stddev);
     DGS(r, param->N, param->stddev);
 
@@ -119,5 +123,51 @@ generateReEncryptionKey(
 
     INTT(rk, rkntt, param);
 
-    memset(buf, 0, sizeof(int64_t) * param->N * 4);
+    //Release ring memory
+    memset(buf, 0, sizeof(int64_t) * param->N * 6);
+}
+
+void
+ReEncrypt(
+        int64_t *reCntt, /* output msg re-encrypted */
+        int64_t *rk,  /* input re-encryption key */
+        int64_t cntt, /* input msg encrypted by Key A */
+        int64_t *buf,
+        const PARAM_SET *param) {
+    int i;
+
+    int64_t *rkNTT, *BDcntt;
+    rkNTT = buf;
+    BDcntt = rkNTT + param->N;
+
+    NTT(rk, rkNTT, param);
+
+    bitDecomposition(cntt, param->N, BDcntt, param->N, param->l);
+
+    for (i = 0; i < param->N; i++) {
+        reCntt[i] = rkNTT[i] * BDcntt[i];
+    }
+
+    //Release ring memory
+    memset(buf, 0, sizeof(int64_t) * param->N * 2);
+}
+
+void
+ReDecrypt(
+        int64_t *fB,     /* input secret key f of B */
+        int64_t *deCntt,  /* output decrypted msg */
+        int64_t *cntt,  /* input re-encrypted msg */
+        int64_t *buf,
+        const PARAM_SET *param) {
+
+    int i;
+
+    int64_t *fBntt;
+    fBntt = buf;
+
+    for (i = 0; i < param->N; i++) {
+        deCntt[i] = modq(modq(fBntt[i] * cntt[i], param->q), param->p);
+    }
+
+    memset(buf, 0, sizeof(int64_t));
 }
