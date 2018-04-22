@@ -14,12 +14,15 @@
 
 uint16_t i;
 PARAM_SET *param;
-int64_t *mem, *f, *g, *hntt, *buf, *m, *m2, *cntt; /* *c, *h; */
+int64_t *mem, *fA, *gA, *hnttA, *buf, *m, *m2, *cnttA; /* *c, *h; */
+
+int64_t *fB, *gB, *hnttB, *cnttB;
+
 char *msg_rev;
 
 void initParam() {
     param = get_param_set_by_id(NTRU_KEM_1024);
-    mem = malloc(sizeof(int64_t) * param->N * 13 + LENGTH_OF_HASH * 2);
+    mem = malloc(sizeof(int64_t) * param->N * 17 + LENGTH_OF_HASH * 2);
     msg_rev = malloc(sizeof(char) * param->max_msg_len);
 
     if (!mem || !msg_rev) {
@@ -29,77 +32,59 @@ void initParam() {
 
     m = mem;
     m2 = m + param->N;
-    cntt = m2 + param->N;
-    f = cntt + param->N;
-    g = f + param->N;;
-    hntt = g + param->N;
-    buf = hntt + param->N;     /* 7 ring elements and 2 hashes*/
+    cnttA = m2 + param->N;
+    fA = cnttA + param->N;
+    gA = fA + param->N;;
+    hnttA = gA + param->N;
+
+    fB = hnttA + param->N;
+    gB = fB + param->N;
+    hnttB = gB + param->N;
+    cnttB = hnttB + param->N;
+
+    buf = cnttB + param->N;     /* 7 ring elements and 2 hashes*/
 }
 
-void keyGen() {
+void keyGen(int64_t *f, int64_t *g, int64_t *hntt) {
     keygen(f, g, hntt, buf, param);
 
-    printf("f:\n");
-    for (i = 0; i < param->N; i++) {
-        printf("%5lld,", (long long) f[i]);
-        if (i % 32 == 31)
-            printf("\n");
-    }
-
-    printf("g:\n");
-    for (i = 0; i < param->N; i++) {
-        printf("%5lld,", (long long) g[i]);
-        if (i % 32 == 31)
-            printf("\n");
-    }
-
-    printf("h (in NTT form):\n");
-    for (i = 0; i < param->N; i++) {
-        printf("%10lld,", (long long) hntt[i]);
-        if (i % 16 == 15)
-            printf("\n");
-    }
+//    printf("f:\n");
+//    for (i = 0; i < param->N; i++) {
+//        printf("%5lld,", (long long) f[i]);
+//        if (i % 32 == 31)
+//            printf("\n");
+//    }
+//
+//    printf("g:\n");
+//    for (i = 0; i < param->N; i++) {
+//        p;;rintf("%5lld,", (long long) g[i]);
+//        if (i % 32 == 31)
+//            printf("\n");
+//    }
+//
+//    printf("h (in NTT form):\n");
+//    for (i = 0; i < param->N; i++) {
+//        printf("%10lld,", (long long) hntt[i]);
+//        if (i % 16 == 15)
+//            printf("\n");
+//    }
 }
 
 void checkKey() {
-    printf("check keys, 0 - okay, -1 - error: %d\n", check_keys(f, g, hntt, buf, param));
+    printf("check keys, 0 - okay, -1 - error: %d\n", check_keys(fA, gA, hnttA, buf, param));
+    printf("check keys, 0 - okay, -1 - error: %d\n", check_keys(fB, gB, hnttB, buf, param));
 }
 
 int main() {
     initParam();
 
-    //生成並印出 DGS 分佈的變數陣列
-//    printf("testing discrete Gaussian sampler with dev %lld\n", (long long) param->stddev);
-//    DGS(f, (const uint16_t) param->N, (const uint16_t) param->stddev);
-//    for (i = 0; i < param->N; i++) {
-//        printf("%5lld ", (long long) f[i]);
-//        if (i % 32 == 31)
-//            printf("\n");
-//    }
-//    memset(f, 0, sizeof(int64_t) * param->N);
+    keyGen(fA, gA, hnttA);
+    keyGen(fB, gB, hnttB);
 
-//    keyGen();
-//    checkKey();
+    int64_t *rk = malloc(sizeof(int64_t) * param->N);
 
-    int64_t a[2] = {4, 9};
-    int64_t b[2] = {6, 1};
-    int64_t length = sizeof(a) / sizeof(a[0]);
-    printf("length is %d \n", length);
-    int64_t BDoutput[length*param->l];
+    generateReEncryptionKey(fA, hnttB, rk, buf, param);
 
-    int64_t POoutput[length*param->l];
-
-    bitDecomposition(a, 2, BDoutput, param->l*length, param->l);
-    powerOf2(b, 2, POoutput, param);
-
-    int64_t result = 0;
-
-    for(i = 0; i < length*param->l; i++) {
-        result += BDoutput[i]*POoutput[i];
-        result = result % param->q;
-    }
-
-    printf("\nresult = %d\n", result);
 
 
     return 0;

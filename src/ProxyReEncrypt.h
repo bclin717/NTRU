@@ -26,8 +26,8 @@ powerOf2(
 
 void
 generateReEncryptionKey(
-        int64_t *fA,       /* input secret key f of A */
-        int64_t *hB,       /* intput public key h of B */
+        const int64_t *fA,       /* input secret key f of A */
+        const int64_t *hnttB,       /* intput public key h of B */
         int64_t *rk,      /* output re-encryption key rk */
         int64_t *buf,
         const PARAM_SET *param);

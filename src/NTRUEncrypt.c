@@ -25,8 +25,8 @@ keygen(
     gntt = buf + param->N;
 
     /* sample F and g from discrete Gaussian */
-    DGS(f, param->N, param->stddev);
-    DGS(g, param->N, param->stddev);
+    DDGS(f, param->N, param->stddev, "A", 1);
+    DDGS(g, param->N, param->stddev, "A", 1);
 
     /* f = pF+1
      * p is usually 2 or 3 or x+2 */
@@ -37,7 +37,6 @@ keygen(
 
     /* converting to NTT form */
     NTT(g, gntt, param);
-    fntt[i] = InvMod(fntt[i], param->q);
     NTT(f, fntt, param);
 
     /* compute h = g/f mod q */
@@ -49,6 +48,7 @@ keygen(
     }
     memset(buf, 0, sizeof(int64_t) * param->N * 2);
 }
+
 
 /*
  * optional, check the correctness of the keys;

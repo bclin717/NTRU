@@ -73,24 +73,19 @@ powerOf2(
         }
     }
 
-    printf("\nPowerOf2 Output :");
-    for(i = 0; i < param->l*inputLength; i++) {
-        if(i % inputLength == 0) printf(" ");
-        printf("%d,", POoutput[i]);
-
-    }
 }
+
 
 void
 generateReEncryptionKey(
-        int64_t *fA,       /* input secret key f of A */
-        int64_t *hnttB,       /* intput public key h of B */
+        const int64_t *fA,       /* input secret key f of A */
+        const int64_t *hnttB,       /* intput public key h of B */
         int64_t *rk,      /* output re-encryption key rk */
         int64_t *buf,
         const PARAM_SET *param) {
 
     int64_t length = sizeof(fA) / sizeof(fA[0]);
-    int64_t *POfA;
+    int64_t *POfA, *POfAntt;
     int64_t *rkntt;
 
     int64_t i, *e, *entt, *r, *rntt;
@@ -98,13 +93,12 @@ generateReEncryptionKey(
     entt = e + param->N;
     r = entt + param->N;
     rntt = r + param->N;
-
-    //uncertain
     POfA = rntt + param->N;
-    rkntt = POfA + param->N;
+    POfAntt = POfA + param->N;
+    rkntt = POfAntt + param->N;
 
-    DGS(e, param->N, param->stddev);
-    DGS(r, param->N, param->stddev);
+    DDGS(e, param->N, param->stddev, "A", 1);
+    DDGS(r, param->N, param->stddev, "A", 1);
 
     // p*e2
     for (i = 0; i < param->N; i++) {
@@ -116,15 +110,21 @@ generateReEncryptionKey(
 
     // PO(fA)
     powerOf2(fA, length, POfA, param);
+    NTT(POfA, POfAntt, param);
 
     // rkntt = hB(NTT) * e(NTT) + r(NTT) mod q
     for (i = 0; i < param->N; i++)
-        rkntt[i] = modq(entt[i] * hnttB[i] + rntt[i], param->q);
+        rkntt[i] = modq(POfAntt[i] + entt[i] * hnttB[i] + rntt[i], param->q);
 
     INTT(rk, rkntt, param);
 
+    for (i = 0; i < param->N; i++) {
+        if (i % 11 == 10) printf("\n");
+        printf("%5lld,", rk[i]);
+    }
+
     //Release ring memory
-    memset(buf, 0, sizeof(int64_t) * param->N * 6);
+    memset(buf, 0, sizeof(int64_t) * param->N * 8);
 }
 
 void
