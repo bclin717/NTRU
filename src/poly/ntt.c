@@ -35,7 +35,6 @@ void INTT(
     for (j = 0; j < param->N; j++) {
         base = 1;
         for (i = 0; i < param->N; i++) {
-
             f[i] = modq(f[i] + f_ntt[j] * base, param->q);
             base = modq(base * inv_roots[j], param->q);
         }
@@ -114,5 +113,3 @@ int64_t InvMod(int64_t a, int64_t n) {
     else
         return ptr[1];
 }
-
-

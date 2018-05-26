@@ -28,7 +28,6 @@ bitDecomposition(
         int64_t* BDinput,
         const int inputLength,
         int64_t* BDoutput,
-        const int outputLength,
         int64_t l) {
 
     int i, i2;
@@ -42,21 +41,6 @@ bitDecomposition(
             BDoutput[i * inputLength + (inputLength - i2 - 1)] = base2bits[i2][i];
         }
     }
-
-    // print
-    for(i = 0; i < inputLength; i++) {
-        printf("No %d elements : %d in base 2: ",i ,BDinput[i]);
-        for(i2 = 0; i2 < l ; i2++) {
-            printf("%d", base2bits[i][i2]);
-        }
-        printf("\n");
-    }
-
-    printf("BitDecompose Output : ");
-    for(i = 0; i < outputLength ; i++) {
-        printf("%d", BDoutput[i]);
-    }
-
 }
 
 void
@@ -69,7 +53,7 @@ powerOf2(
     int i, i2;
     for(i = 0; i < param->l; i++) {
         for(i2 = 0; i2 < inputLength; i2++) {
-            POoutput[i * inputLength + (inputLength - i2 - 1)] = (int64_t)( pow(2, i) * POinput[i2] ) % param->q;
+            POoutput[i * inputLength + (inputLength - i2 - 1)] = (int64_t) modq(pow(2, i) * POinput[i2], param->q);
         }
     }
 
@@ -142,7 +126,7 @@ ReEncrypt(
 
     NTT(rk, rkNTT, param);
 
-    bitDecomposition(cntt, param->N, BDcntt, param->N, param->l);
+    bitDecomposition(cntt, param->N, BDcntt, param->l);
 
     for (i = 0; i < param->N; i++) {
         reCntt[i] = rkNTT[i] * BDcntt[i];

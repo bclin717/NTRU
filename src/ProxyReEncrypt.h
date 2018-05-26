@@ -14,7 +14,6 @@ bitDecomposition(
         int64_t* BDinput,
         const int inputLength,
         int64_t* BDoutput,
-        const int outputLength,
         const int64_t l);
 
 void

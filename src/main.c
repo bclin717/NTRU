@@ -11,6 +11,7 @@
 #include "param.h"
 #include "poly/poly.h"
 #include "api.h"
+#include "poly/ntt.h"
 
 uint16_t i;
 PARAM_SET *param;
@@ -81,9 +82,78 @@ int main() {
     keyGen(fA, gA, hnttA);
     keyGen(fB, gB, hnttB);
 
-    int64_t *rk = malloc(sizeof(int64_t) * param->N);
+    int i, i2;
+    int length = param->N;
+    int64_t *BD = malloc(sizeof(int64_t) * length * param->l);
+    int64_t *PO = malloc(sizeof(int64_t) * length * param->l);
 
-    generateReEncryptionKey(fA, hnttB, rk, buf, param);
+    for (i = 0; i < length * param->l; i++) {
+        BD[i] = 0;
+        PO[i] = 0;
+    }
+
+    int64_t a[length];
+    int64_t b[length];
+    memset(a, 0, sizeof(int64_t) * length);
+    memset(b, 0, sizeof(int64_t) * length);
+    a[0] = 4, a[1] = 9;
+    b[0] = 6, b[1] = 1;
+
+    bitDecomposition(a, 2, BD, param->l);
+    powerOf2(b, 2, PO, param);
+
+
+    int64_t tempA[length], tempB[length], tempC[length];
+    int64_t tempAntt[length], tempBntt[length], tempCntt[length];
+    int64_t result[length];
+    for (i = 0; i < length; i++) {
+        tempA[i] = 0;
+        tempB[i] = 0;
+        tempC[i] = 0;
+        tempAntt[i] = 0;
+        tempBntt[i] = 0;
+        tempCntt[i] = 0;
+        result[i] = 0;
+    }
+
+
+    for (i = 0; i < param->l * length; i += length) {
+        for (i2 = 0; i2 < length; i2++) {
+            tempA[i2] = BD[i2 + i];
+            tempB[i2] = PO[i2 + i];
+        }
+        NTT(tempA, tempAntt, param);
+        NTT(tempB, tempBntt, param);
+        for (i2 = 0; i2 < length; i2++) {
+            tempCntt[i2] = modq(tempAntt[i2] * tempBntt[i2], param->q);
+        }
+        INTT(tempC, tempCntt, param);
+        for (i2 = 0; i2 < length; i2++) {
+            result[i2] = modq(result[i2] + tempC[i2], param->q);
+        }
+    }
+
+    for (i = 0; i < length * param->l; i++) {
+        if (i % 45 == 0) printf("\n");
+        printf("%lld, ", BD[i]);
+    }
+
+    printf("\n\n");
+
+    for (i = 0; i < length * param->l; i++) {
+        if (i % 45 == 0) printf("\n");
+        printf("%lld, ", PO[i]);
+    }
+
+    printf("\n\n");
+
+    for (i = 0; i < length; i++) {
+        if (i % 14 == 0) printf("\n");
+        printf("%lld, ", result[i]);
+    }
+
+
+
 
 
 
