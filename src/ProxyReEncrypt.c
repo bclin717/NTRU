@@ -59,56 +59,87 @@ powerOf2(
 
 }
 
+void newNTT(int64_t *f, int64_t *f_ntt, int64_t length, const PARAM_SET *param) {
+    int i, i2;
+    int64_t temp[param->N], tempNTT[param->N];
+    if (length > param->N) {
+        for (i = 0; i < length / param->N; i++) {
+            for (i2 = 0; i2 < param->N; i2++)
+                temp[i2] = f[i2 + i * param->N];
+            NTT(temp, tempNTT, param);
+            for (i2 = 0; i2 < param->N; i2++)
+                f_ntt[i2 + i * param->N] = tempNTT[i2];
+        }
+    }
+}
+
+void newINTT(int64_t *f, int64_t *f_ntt, int64_t length, PARAM_SET *param) {
+    int i, i2;
+    int64_t temp[param->N], tempNTT[param->N];
+    if (length > param->N) {
+        for (i = 0; i < length / param->N; i++) {
+            for (i2 = 0; i2 < param->N; i2++)
+                tempNTT[i2] = f_ntt[i2 + i * param->N];
+            INTT(temp, tempNTT, param);
+            for (i2 = 0; i2 < param->N; i2++)
+                f[i2 + i * param->N] = temp[i2];
+        }
+    }
+}
 
 void
 generateReEncryptionKey(
         const int64_t *fA,       /* input secret key f of A */
         const int64_t *hnttB,       /* intput public key h of B */
         int64_t *rk,      /* output re-encryption key rk */
-        int64_t *buf,
         const PARAM_SET *param) {
 
-    int64_t length = sizeof(fA) / sizeof(fA[0]);
-    int64_t *POfA, *POfAntt;
-    int64_t *rkntt;
+    int64_t *buf = malloc(sizeof(int64_t) * param->N * param->l * 5);
 
-    int64_t i, *e, *entt, *r, *rntt;
+    int64_t i, i2, *e, *entt, *r, *rntt, *POfA;
     e = buf;
-    entt = e + param->N;
-    r = entt + param->N;
-    rntt = r + param->N;
-    POfA = rntt + param->N;
-    POfAntt = POfA + param->N;
-    rkntt = POfAntt + param->N;
+    entt = e + param->N * param->l;
+    r = entt + param->N * param->l;
+    rntt = r + param->N * param->l;
+    POfA = rntt + param->N * param->l;
 
-    DDGS(e, param->N, param->stddev, "A", 1);
-    DDGS(r, param->N, param->stddev, "A", 1);
+    DDGS(e, param->N * param->l, param->stddev, "A", 1);
+    DDGS(r, param->N * param->l, param->stddev, "A", 1);
 
     // p*e2
-    for (i = 0; i < param->N; i++) {
+    for (i = 0; i < param->N * param->l; i++)
         r[i] = r[i] * param->p;
-    }
 
-    NTT(e, entt, param);
-    NTT(r, rntt, param);
+    newNTT(r, rntt, param->N * param->l, param);
+    newNTT(e, entt, param->N * param->l, param);
 
     // PO(fA)
-    powerOf2(fA, length, POfA, param);
-    NTT(POfA, POfAntt, param);
+    powerOf2(fA, param->N, POfA, param);
+
+    //hB(NTT) * e(NTT)
+    for (i = 0; i < param->l; i++) {
+        for (i2 = 0; i2 < param->N; i2++) {
+            entt[i2 + (i * param->N)] = modq(entt[i2 + (i * param->N)] * hnttB[i2], param->q);
+        }
+    }
 
     // rkntt = hB(NTT) * e(NTT) + r(NTT) mod q
     for (i = 0; i < param->N; i++)
-        rkntt[i] = modq(POfAntt[i] + entt[i] * hnttB[i] + rntt[i], param->q);
+        rntt[i] = modq(entt[i] + rntt[i], param->q);
 
-    INTT(rk, rkntt, param);
+    newINTT(r, rntt, param->N * param->l, param);
+
+    for (i = 0; i < param->N; i++) {
+        rk[i] = modq(POfA[i] + r[i], param->q);
+    }
 
     for (i = 0; i < param->N; i++) {
         if (i % 11 == 10) printf("\n");
         printf("%5lld,", rk[i]);
     }
 
-    //Release ring memory
-    memset(buf, 0, sizeof(int64_t) * param->N * 8);
+    //Release ring memoryPOfA
+    memset(buf, 0, sizeof(int64_t) * param->N * param->l * 5);
 }
 
 void
