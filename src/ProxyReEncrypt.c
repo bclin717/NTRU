@@ -129,11 +129,12 @@ generateReEncryptionKey(
 
     newINTT(r, rntt, param->N * param->l, param);
 
-    for (i = 0; i < param->N; i++) {
+    for (i = 0; i < param->N * param->l; i++) {
         rk[i] = modq(POfA[i] + r[i], param->q);
     }
 
-    for (i = 0; i < param->N; i++) {
+
+    for (i = 0; i < param->N * param->l; i++) {
         if (i % 11 == 10) printf("\n");
         printf("%5lld,", rk[i]);
     }
