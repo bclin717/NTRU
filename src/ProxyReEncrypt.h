@@ -33,9 +33,9 @@ generateReEncryptionKey(
 
 void
 ReEncrypt(
-        int64_t *reCntt, /* output msg re-encrypted */
-        int64_t *rk,  /* input re-encryption key */
-        int64_t cntt, /* input msg encrypted by Key A */
+        int64_t *reCiphertext, /* output msg re-encrypted */
+        const int64_t *rk,  /* input re-encryption key */
+        const int64_t *c, /* input msg encrypted by Key A */
         int64_t *buf,
         const PARAM_SET* param);
 

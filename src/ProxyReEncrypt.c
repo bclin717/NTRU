@@ -145,27 +145,29 @@ generateReEncryptionKey(
 
 void
 ReEncrypt(
-        int64_t *reCntt, /* output msg re-encrypted */
-        int64_t *rk,  /* input re-encryption key */
-        int64_t cntt, /* input msg encrypted by Key A */
+        int64_t *reCiphertext, /* output msg re-encrypted */
+        const int64_t *rk,  /* input re-encryption key */
+        const int64_t *c, /* input msg encrypted by Key A */
         int64_t *buf,
         const PARAM_SET *param) {
-    int i;
+    int i, i2;
 
-    int64_t *rkNTT, *BDcntt;
-    rkNTT = buf;
-    BDcntt = rkNTT + param->N;
+    int64_t *rkNTT, *BDc;
+    rkNTT = malloc(sizeof(int64_t) * param->N * param->l * 2);
+    BDc = rkNTT + (param->N * param->l);
 
-    NTT(rk, rkNTT, param);
+    newNTT(rk, rkNTT, param->N * param->l, param);
 
-    bitDecomposition(cntt, param->N, BDcntt, param->l);
+    bitDecomposition(c, param->N, BDc, param->l);
 
-    for (i = 0; i < param->N; i++) {
-        reCntt[i] = rkNTT[i] * BDcntt[i];
+    for (i = 0; i < param->l; i++) {
+        for (i2 = 0; i2 < param->N; i2++) {
+            reCiphertext[i2] += modq(rkNTT[i2 + i * param->N] * BDc[i2 + i * param->N], param->q);
+        }
     }
 
     //Release ring memory
-    memset(buf, 0, sizeof(int64_t) * param->N * 2);
+    memset(buf, 0, sizeof(int64_t) * param->N * param->l * 2);
 }
 
 void
