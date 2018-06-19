@@ -88,24 +88,22 @@ int main() {
     keyGen(fA, gA, hnttA);
     keyGen(fB, gB, hnttB);
 
-    int i, i2;
-    int length = param->N;
-    int64_t *BD = malloc(sizeof(int64_t) * length * param->l);
-    int64_t *PO = malloc(sizeof(int64_t) * length * param->l);
-
-    for (i = 0; i < length * param->l; i++) {
-        BD[i] = 0;
-        PO[i] = 0;
-    }
-
-    int64_t a[length];
-    int64_t b[length];
-    memset(a, 0, sizeof(int64_t) * length);
-    memset(b, 0, sizeof(int64_t) * length);
-    a[0] = 4, a[1] = 9;
-    b[0] = 6, b[1] = 1;
-
     generateReEncryptionKey(fA, hnttB, rk, param);
+
+    binary_poly_gen(m, param->N);
+
+
+    encrypt_kem(m, hnttA, cnttA, buf, param);
+
+    ReEncrypt(cnttB, rk, cnttA, buf, param);
+
+    ReDecrypt(fB, cnttB, cnttA, buf, param);
+//    decrypt_kem(m2, fB, cnttB, buf, param);
+
+    int counter = 0;
+    for (i = 0; i < param->N; i++)
+        counter += abs(m2[i] - m[i]);
+    printf("there are %d out of 1024 coefficients that are incorrect!\n", counter);
 
     return 0;
 }

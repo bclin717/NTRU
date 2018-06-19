@@ -90,7 +90,7 @@ void newINTT(int64_t *f, int64_t *f_ntt, int64_t length, PARAM_SET *param) {
 void
 generateReEncryptionKey(
         const int64_t *fA,       /* input secret key f of A */
-        const int64_t *hnttB,       /* intput public key h of B */
+        const int64_t *hnttB,       /* input public key h of B */
         int64_t *rk,      /* output re-encryption key rk */
         const PARAM_SET *param) {
 
@@ -127,6 +127,7 @@ generateReEncryptionKey(
     for (i = 0; i < param->N; i++)
         rntt[i] = modq(entt[i] + rntt[i], param->q);
 
+
     newINTT(r, rntt, param->N * param->l, param);
 
     for (i = 0; i < param->N * param->l; i++) {
@@ -134,10 +135,10 @@ generateReEncryptionKey(
     }
 
 
-    for (i = 0; i < param->N * param->l; i++) {
-        if (i % 11 == 10) printf("\n");
-        printf("%5lld,", rk[i]);
-    }
+//    for (i = 0; i < param->N * param->l; i++) {
+//        if (i % 11 == 10) printf("\n");
+//        printf("%5lld,", rk[i]);
+//    }
 
     //Release ring memoryPOfA
     memset(buf, 0, sizeof(int64_t) * param->N * param->l * 5);
@@ -147,7 +148,7 @@ void
 ReEncrypt(
         int64_t *reCiphertext, /* output msg re-encrypted */
         const int64_t *rk,  /* input re-encryption key */
-        const int64_t *c, /* input msg encrypted by Key A */
+        const int64_t *cntt, /* input msg encrypted by Key A */
         int64_t *buf,
         const PARAM_SET *param) {
     int i, i2;
@@ -158,6 +159,11 @@ ReEncrypt(
 
     newNTT(rk, rkNTT, param->N * param->l, param);
 
+    int64_t *c;
+    c = buf + param->N;
+    INTT(c, cntt, param);
+
+
     bitDecomposition(c, param->N, BDc, param->l);
 
     for (i = 0; i < param->l; i++) {
@@ -167,7 +173,8 @@ ReEncrypt(
     }
 
     //Release ring memory
-    memset(buf, 0, sizeof(int64_t) * param->N * param->l * 2);
+    memset(buf, 0, sizeof(int64_t) * param->N);
+    memset(rkNTT, 0, sizeof(int64_t) * param->N * param->l * 2);
 }
 
 void
@@ -182,6 +189,8 @@ ReDecrypt(
 
     int64_t *fBntt;
     fBntt = buf;
+
+    NTT(fB, fBntt, param);
 
     for (i = 0; i < param->N; i++) {
         deCntt[i] = modq(modq(fBntt[i] * cntt[i], param->q), param->p);
