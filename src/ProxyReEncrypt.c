@@ -90,18 +90,27 @@ void newINTT(int64_t *f, int64_t *f_ntt, int64_t length, PARAM_SET *param) {
 void
 generateReEncryptionKey(
         const int64_t *fA,       /* input secret key f of A */
+        const int64_t *fB,
         const int64_t *hnttB,       /* input public key h of B */
         int64_t *rk,      /* output re-encryption key rk */
         const PARAM_SET *param) {
 
-    int64_t *buf = malloc(sizeof(int64_t) * param->N * param->l * 5);
+    int64_t *buf = malloc(sizeof(int64_t) * param->N * param->l * 7);
 
-    int64_t i, i2, *e, *entt, *r, *rntt, *POfA;
+    int64_t i, i2, *e, *entt, *r, *rntt, *POfA, *POfAntt, *fAntt, *fBntt, *fABdivNTT, *fABdiv, *rkntt;
     e = buf;
     entt = e + param->N * param->l;
     r = entt + param->N * param->l;
     rntt = r + param->N * param->l;
     POfA = rntt + param->N * param->l;
+    POfAntt = POfA + param->N * param->l;
+    rkntt = POfAntt + param->N * param->l;
+
+    fAntt = malloc(sizeof(int64_t) * param->N * 4);
+    fBntt = fAntt + param->N;
+    fABdivNTT = fBntt + param->N;
+    fABdiv = fABdivNTT + param->N;
+
 
     DDGS(e, param->N * param->l, param->stddev, "A", 1);
     DDGS(r, param->N * param->l, param->stddev, "A", 1);
@@ -113,27 +122,27 @@ generateReEncryptionKey(
     newNTT(r, rntt, param->N * param->l, param);
     newNTT(e, entt, param->N * param->l, param);
 
-    // PO(fA)
-    powerOf2(fA, param->N, POfA, param);
+    NTT(fA, fAntt, param);
+    NTT(fB, fBntt, param);
 
-    //hB(NTT) * e(NTT)
-    for (i = 0; i < param->l; i++) {
-        for (i2 = 0; i2 < param->N; i2++) {
-            entt[i2 + (i * param->N)] = modq(entt[i2 + (i * param->N)] * hnttB[i2], param->q);
-        }
+    for (i = 0; i < param->N; i++) {
+        /* compute f^-1 mod q */
+        fBntt[i] = InvMod(fBntt[i], param->q);
+        /* compute h = p*gf^-1 mod q */
+        fABdivNTT[i] = param->p * fAntt[i] * fBntt[i] % param->q;
     }
 
-    // rkntt = hB(NTT) * e(NTT) + r(NTT) mod q
-    for (i = 0; i < param->N; i++)
-        rntt[i] = modq(entt[i] + rntt[i], param->q);
+    INTT(fABdiv, fABdivNTT, param);
 
+    // PO(fA/fB)
+    powerOf2(fABdiv, param->N, POfA, param);
+    newNTT(POfA, POfAntt, param->N * param->l, param);
 
-    newINTT(r, rntt, param->N * param->l, param);
-
-    for (i = 0; i < param->N * param->l; i++) {
-        rk[i] = modq(POfA[i] + r[i], param->q);
+    // rkntt = e(NTT)*PO(fA/fB) + r(NTT) mod q
+    for (i = 0; i < param->l * param->N; i++) {
+        rkntt[i] = entt[i] * POfAntt[i] + rntt[i];
     }
-
+    newINTT(rk, rkntt, param->l * param->N, param);
 
 //    for (i = 0; i < param->N * param->l; i++) {
 //        if (i % 11 == 10) printf("\n");
@@ -141,7 +150,8 @@ generateReEncryptionKey(
 //    }
 
     //Release ring memoryPOfA
-    memset(buf, 0, sizeof(int64_t) * param->N * param->l * 5);
+    memset(buf, 0, sizeof(int64_t) * param->N * param->l * 7);
+    memset(fAntt, 0, sizeof(int64_t) * param->N * 4);
 }
 
 void
@@ -153,9 +163,15 @@ ReEncrypt(
         const PARAM_SET *param) {
     int i, i2;
 
+    memset(reCiphertext, 0, sizeof(int64_t) * param->N);
+
     int64_t *rkNTT, *BDc;
-    rkNTT = malloc(sizeof(int64_t) * param->N * param->l * 2);
+    int64_t *cntt2;
+
+    rkNTT = malloc(sizeof(int64_t) * param->N * param->l * 3);
     BDc = rkNTT + (param->N * param->l);
+    cntt2 = BDc + (param->N * param->l);
+
 
     newNTT(rk, rkNTT, param->N * param->l, param);
 
@@ -163,18 +179,19 @@ ReEncrypt(
     c = buf + param->N;
     INTT(c, cntt, param);
 
-
     bitDecomposition(c, param->N, BDc, param->l);
+
+    newNTT(BDc, cntt2, param->N * param->l, param);
 
     for (i = 0; i < param->l; i++) {
         for (i2 = 0; i2 < param->N; i2++) {
-            reCiphertext[i2] += modq(rkNTT[i2 + i * param->N] * BDc[i2 + i * param->N], param->q);
+            reCiphertext[i2] += modq(rkNTT[i2 + i * param->N] * cntt2[i2 + i * param->N], param->q);
         }
     }
 
     //Release ring memory
     memset(buf, 0, sizeof(int64_t) * param->N);
-    memset(rkNTT, 0, sizeof(int64_t) * param->N * param->l * 2);
+    memset(rkNTT, 0, sizeof(int64_t) * param->N * param->l * 3);
 }
 
 void

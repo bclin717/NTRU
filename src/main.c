@@ -88,7 +88,7 @@ int main() {
     keyGen(fA, gA, hnttA);
     keyGen(fB, gB, hnttB);
 
-    generateReEncryptionKey(fA, hnttB, rk, param);
+    generateReEncryptionKey(fA, fB, hnttB, rk, param);
 
     binary_poly_gen(m, param->N);
 
@@ -97,8 +97,8 @@ int main() {
 
     ReEncrypt(cnttB, rk, cnttA, buf, param);
 
-    ReDecrypt(fB, cnttB, cnttA, buf, param);
-//    decrypt_kem(m2, fB, cnttB, buf, param);
+//    ReDecrypt(fB, cnttB, cnttA, buf, param);
+    decrypt_kem(m2, fB, cnttB, buf, param);
 
     int counter = 0;
     for (i = 0; i < param->N; i++)
